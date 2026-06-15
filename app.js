@@ -146,6 +146,13 @@ function renderProducts(){
                     คงเหลือ ${product.stock}
                 </div>
 
+                <button
+                class="delete-btn"
+                onclick="deleteProduct(${product.id})"
+             >
+                🗑️ ลบสินค้า
+                </button>
+
             </div>
 
         </div>
@@ -153,6 +160,26 @@ function renderProducts(){
         `;
 
     });
+
+}
+
+function deleteProduct(id){
+
+    const confirmDelete = confirm(
+        "ต้องการลบสินค้านี้หรือไม่?"
+    );
+
+    if(!confirmDelete) return;
+
+    products = products.filter(
+        product => product.id !== id
+    );
+
+    saveProducts();
+
+    renderProducts();
+
+    updateStats();
 
 }
 
@@ -185,3 +212,4 @@ document
     });
 
 });
+
