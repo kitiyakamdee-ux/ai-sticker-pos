@@ -288,51 +288,65 @@ function captureBasket(){
 
 function findBestMatch(imageSrc, callback){
 
-    let best = null;
-    let bestScore = Infinity;
-    let checked = 0;
+    const results = [];
 
-    products.forEach(p => {
+    const canvasA = document.createElement("canvas");
+    const ctxA = canvasA.getContext("2d");
 
-        const img1 = new Image();
-        const img2 = new Image();
+    const imgA = new Image();
+    imgA.src = imageSrc;
 
-        img1.src = imageSrc;
-        img2.src = p.image;
+    imgA.onload = () => {
 
-        img1.onload = img2.onload = () => {
+        canvasA.width = 50;
+        canvasA.height = 50;
 
-            const c1 = document.createElement("canvas");
-            const c2 = document.createElement("canvas");
+        ctxA.drawImage(imgA, 0, 0, 50, 50);
 
-            c1.width = c2.width = 50;
-            c1.height = c2.height = 50;
+        const dataA = ctxA.getImageData(0,0,50,50).data;
 
-            const ctx1 = c1.getContext("2d");
-            const ctx2 = c2.getContext("2d");
+        let done = 0;
 
-            ctx1.drawImage(img1, 0, 0, 50, 50);
-            ctx2.drawImage(img2, 0, 0, 50, 50);
+        products.forEach(p => {
 
-            const d1 = ctx1.getImageData(0,0,50,50).data;
-            const d2 = ctx2.getImageData(0,0,50,50).data;
+            const imgB = new Image();
+            imgB.src = p.image;
 
-            let diff = 0;
+            imgB.onload = () => {
 
-            for(let i=0;i<d1.length;i+=4){
-                diff += Math.abs(d1[i]-d2[i]);
-            }
+                const canvasB = document.createElement("canvas");
+                const ctxB = canvasB.getContext("2d");
 
-            if(diff < bestScore){
-                bestScore = diff;
-                best = p;
-            }
+                canvasB.width = 50;
+                canvasB.height = 50;
 
-            checked++;
+                ctxB.drawImage(imgB, 0, 0, 50, 50);
 
-            if(checked === products.length){
-                callback(best);
-            }
-        };
-    });
+                const dataB = ctxB.getImageData(0,0,50,50).data;
+
+                let diff = 0;
+
+                for(let i=0;i<dataA.length;i+=4){
+
+                    // grayscale compare (แม่นขึ้น)
+                    const a = (dataA[i] + dataA[i+1] + dataA[i+2]) / 3;
+                    const b = (dataB[i] + dataB[i+1] + dataB[i+2]) / 3;
+
+                    diff += Math.abs(a - b);
+                }
+
+                results.push({product:p, diff});
+
+                done++;
+
+                if(done === products.length){
+
+                    results.sort((a,b)=>a.diff-b.diff);
+
+                    callback(results[0].product);
+                }
+            };
+        });
+    };
 }
+
