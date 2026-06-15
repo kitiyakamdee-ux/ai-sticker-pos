@@ -286,22 +286,22 @@ function captureBasket(){
 
 function detectMultipleProducts(canvas, callback){
 
-    const ctx = canvas.getContext("2d");
-
     const W = canvas.width;
     const H = canvas.height;
 
-    const gridSize = 2; // 2x2 = 4 ช่อง (ปรับได้)
+    const gridSize = 2;
 
     const cellW = W / gridSize;
     const cellH = H / gridSize;
 
     let results = [];
-
-    let checkedCells = 0;
+    let tasks = 0;
+    let finished = 0;
 
     for(let gx=0; gx<gridSize; gx++){
         for(let gy=0; gy<gridSize; gy++){
+
+            tasks++;
 
             const cell = document.createElement("canvas");
             cell.width = 50;
@@ -329,11 +329,10 @@ function detectMultipleProducts(canvas, callback){
                     results.push(bestProduct);
                 }
 
-                checkedCells++;
+                finished++;
 
-                if(checkedCells === gridSize * gridSize){
+                if(finished === tasks){
 
-                    // ลบซ้ำ
                     const unique = [];
                     const seen = new Set();
 
@@ -424,7 +423,7 @@ function matchCell(cellData, callback){
     let best = null;
     let bestDiff = Infinity;
 
-    let done = 0;
+    let loaded = 0;
 
     products.forEach(p => {
 
@@ -457,9 +456,9 @@ function matchCell(cellData, callback){
                 best = p;
             }
 
-            done++;
+            loaded++;
 
-            if(done === products.length){
+            if(loaded === products.length){
                 callback(best);
             }
         };
