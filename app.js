@@ -456,6 +456,24 @@ document
 
 function captureBasket(){
 
+    if(!products.length){
+        alert("ไม่มีสินค้าในระบบ");
+        return;
+    }
+
+    findBestMatch((product, diff) => {
+
+        if(!product){
+            alert("ไม่พบสินค้า");
+            return;
+        }
+
+        alert("AI พบสินค้า: " + product.name);
+
+        console.log("ความต่าง:", diff);
+    });
+}
+
     const video =
     document.getElementById(
         "camera"
@@ -517,6 +535,88 @@ function captureBasket(){
         "ถ่ายภาพสำเร็จ"
     );
 
+}
+
+function getImageData(imgSrc, callback){
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+
+    img.onload = function(){
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = 50;
+        canvas.height = 50;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(img, 0, 0, 50, 50);
+
+        const data = ctx.getImageData(0, 0, 50, 50).data;
+
+        callback(data);
+    };
+
+    img.src = imgSrc;
+}
+
+function compareImages(data1, data2){
+
+    let diff = 0;
+
+    for(let i = 0; i < data1.length; i += 4){
+
+        diff += Math.abs(data1[i] - data2[i]);
+        diff += Math.abs(data1[i+1] - data2[i+1]);
+        diff += Math.abs(data1[i+2] - data2[i+2]);
+    }
+
+    return diff;
+}
+
+function findBestMatch(callback){
+
+    const video = document.getElementById("camera");
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(video, 0, 0);
+
+    const basketImage = canvas.toDataURL("image/jpeg");
+
+    getImageData(basketImage, (basketData) => {
+
+        let bestMatch = null;
+        let lowestDiff = Infinity;
+
+        let checked = 0;
+
+        products.forEach(product => {
+
+            getImageData(product.image, (productData) => {
+
+                const diff = compareImages(basketData, productData);
+
+                if(diff < lowestDiff){
+                    lowestDiff = diff;
+                    bestMatch = product;
+                }
+
+                checked++;
+
+                if(checked === products.length){
+
+                    callback(bestMatch, lowestDiff);
+                }
+            });
+        });
+    });
 }
 
 
