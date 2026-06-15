@@ -391,4 +391,132 @@ function restoreData(e){
 
 }
 
+// ======================
+// Camera
+// ======================
+
+let cameraStream = null;
+
+document
+.getElementById("cameraBtn")
+.addEventListener(
+    "click",
+    startCamera
+);
+
+async function startCamera(){
+
+    try{
+
+        const video =
+        document.getElementById(
+            "camera"
+        );
+
+        cameraStream =
+        await navigator
+        .mediaDevices
+        .getUserMedia({
+
+            video:{
+                facingMode:"environment"
+            }
+
+        });
+
+        video.srcObject =
+        cameraStream;
+
+        video.style.display =
+        "block";
+
+    }
+    catch(error){
+
+        alert(
+            "เปิดกล้องไม่ได้"
+        );
+
+        console.error(error);
+
+    }
+
+}
+
+// ======================
+// Capture
+// ======================
+
+document
+.getElementById("captureBtn")
+.addEventListener(
+    "click",
+    captureBasket
+);
+
+function captureBasket(){
+
+    const video =
+    document.getElementById(
+        "camera"
+    );
+
+    if(!video.srcObject){
+
+        alert(
+            "กรุณาเปิดกล้องก่อน"
+        );
+
+        return;
+
+    }
+
+    const canvas =
+    document.createElement(
+        "canvas"
+    );
+
+    canvas.width =
+    video.videoWidth;
+
+    canvas.height =
+    video.videoHeight;
+
+    const ctx =
+    canvas.getContext("2d");
+
+    ctx.drawImage(
+        video,
+        0,
+        0
+    );
+
+    const imageData =
+    canvas.toDataURL(
+        "image/jpeg",
+        0.8
+    );
+
+    const img =
+    document.getElementById(
+        "capturedImage"
+    );
+
+    img.src =
+    imageData;
+
+    img.style.display =
+    "block";
+
+    localStorage.setItem(
+        "lastBasketPhoto",
+        imageData
+    );
+
+    alert(
+        "ถ่ายภาพสำเร็จ"
+    );
+
+}
+
 
