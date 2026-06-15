@@ -35,33 +35,55 @@ function addProduct(){
         prompt("จำนวนสต๊อก")
     );
 
-    const image = prompt(
-        "URL รูปภาพ (เว้นว่างได้)"
+    const imagePicker =
+    document.getElementById(
+        "imagePicker"
     );
 
-    const product = {
+    imagePicker.value = "";
 
-        id: Date.now(),
+    imagePicker.onchange = function(){
 
-        name,
+        const file =
+        imagePicker.files[0];
 
-        price,
+        if(!file) return;
 
-        stock,
+        const reader =
+        new FileReader();
 
-        image:
-        image ||
-        "https://via.placeholder.com/300x300?text=Sticker"
+        reader.onload = function(e){
+
+            const product = {
+
+                id: Date.now(),
+
+                name,
+
+                price,
+
+                stock,
+
+                image: e.target.result
+
+            };
+
+            products.push(product);
+
+            saveProducts();
+
+            renderProducts();
+
+            updateStats();
+
+        };
+
+        reader.readAsDataURL(file);
 
     };
 
-    products.push(product);
+    imagePicker.click();
 
-    saveProducts();
-
-    renderProducts();
-
-    updateStats();
 }
 
 // ======================
