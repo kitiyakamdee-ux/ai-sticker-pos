@@ -143,8 +143,22 @@ function renderProducts(){
                 </div>
 
                 <div class="product-stock">
-                    คงเหลือ ${product.stock}
+                คงเหลือ ${product.stock}
                 </div>
+
+                <button
+                class="edit-btn"
+                onclick="editProduct(${product.id})"
+                >
+                ✏️ แก้ไข
+                </button>
+
+                <button
+                class="delete-btn"
+                onclick="deleteProduct(${product.id})"
+                >
+                🗑️ ลบสินค้า
+                </button>
 
                 <button
                 class="delete-btn"
@@ -230,14 +244,6 @@ function resetAll(){
     saveProducts();
 
     renderProducts();
-   
-    <button
-    class="edit-btn"
-    onclick="editProduct(${product.id})"
-    >
-    ✏️ แก้ไข
-    </button>
-    
 
     updateStats();
 
