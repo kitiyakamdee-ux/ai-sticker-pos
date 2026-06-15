@@ -138,3 +138,18 @@ body{
     color:white;
     cursor:pointer;
 }
+
+#resetBtn{
+    background:#e53935;
+    color:white;
+}
+
+#backupBtn{
+    background:#6a1b9a;
+    color:white;
+}
+
+#restoreBtn{
+    background:#00897b;
+    color:white;
+}
