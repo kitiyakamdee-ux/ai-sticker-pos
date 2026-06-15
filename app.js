@@ -269,17 +269,86 @@ function captureBasket(){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    const basketImage = canvas.toDataURL("image/jpeg");
+    detectMultipleProducts(canvas, (results) => {
 
-    findBestMatch(basketImage, (product) => {
-
-        if(!product){
+        if(results.length === 0){
             alert("ไม่พบสินค้า");
             return;
         }
 
-        alert("AI พบ: " + product.name);
+        const names = results.map(r => r.name).join(", ");
+
+        alert("AI พบสินค้า: " + names);
+
+        console.log(results);
     });
+}
+
+function detectMultipleProducts(canvas, callback){
+
+    const ctx = canvas.getContext("2d");
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    const gridSize = 2; // 2x2 = 4 ช่อง (ปรับได้)
+
+    const cellW = W / gridSize;
+    const cellH = H / gridSize;
+
+    let results = [];
+
+    let checkedCells = 0;
+
+    for(let gx=0; gx<gridSize; gx++){
+        for(let gy=0; gy<gridSize; gy++){
+
+            const cell = document.createElement("canvas");
+            cell.width = 50;
+            cell.height = 50;
+
+            const cctx = cell.getContext("2d");
+
+            cctx.drawImage(
+                canvas,
+                gx * cellW,
+                gy * cellH,
+                cellW,
+                cellH,
+                0,
+                0,
+                50,
+                50
+            );
+
+            const cellData = cctx.getImageData(0,0,50,50).data;
+
+            matchCell(cellData, (bestProduct) => {
+
+                if(bestProduct){
+                    results.push(bestProduct);
+                }
+
+                checkedCells++;
+
+                if(checkedCells === gridSize * gridSize){
+
+                    // ลบซ้ำ
+                    const unique = [];
+                    const seen = new Set();
+
+                    results.forEach(p => {
+                        if(!seen.has(p.id)){
+                            seen.add(p.id);
+                            unique.push(p);
+                        }
+                    });
+
+                    callback(unique);
+                }
+            });
+        }
+    }
 }
 
 // ======================
@@ -348,5 +417,52 @@ function findBestMatch(imageSrc, callback){
             };
         });
     };
+}
+
+function matchCell(cellData, callback){
+
+    let best = null;
+    let bestDiff = Infinity;
+
+    let done = 0;
+
+    products.forEach(p => {
+
+        const img = new Image();
+        img.src = p.image;
+
+        img.onload = () => {
+
+            const canvas = document.createElement("canvas");
+            canvas.width = 50;
+            canvas.height = 50;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, 50, 50);
+
+            const data = ctx.getImageData(0,0,50,50).data;
+
+            let diff = 0;
+
+            for(let i=0;i<cellData.length;i+=4){
+
+                const a = (cellData[i]+cellData[i+1]+cellData[i+2])/3;
+                const b = (data[i]+data[i+1]+data[i+2])/3;
+
+                diff += Math.abs(a-b);
+            }
+
+            if(diff < bestDiff){
+                bestDiff = diff;
+                best = p;
+            }
+
+            done++;
+
+            if(done === products.length){
+                callback(best);
+            }
+        };
+    });
 }
 
