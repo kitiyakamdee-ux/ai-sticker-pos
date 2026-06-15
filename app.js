@@ -2,6 +2,15 @@
 // AI Sticker POS FIXED
 // ======================
 
+let model;
+
+async function loadAI(){
+    model = await mobilenet.load();
+    console.log("AI Ready");
+}
+
+loadAI();
+
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let cameraStream = null;
 
@@ -248,17 +257,17 @@ async function startCamera(){
 // AI MATCH (สำคัญ)
 // ======================
 
-function captureBasket(){
+async function captureBasket(){
+
+    if(!model){
+        alert("AI ยังโหลดไม่เสร็จ");
+        return;
+    }
 
     const video = document.getElementById("camera");
 
     if(!video.srcObject){
         alert("เปิดกล้องก่อน");
-        return;
-    }
-
-    if(products.length === 0){
-        alert("ไม่มีสินค้า");
         return;
     }
 
@@ -269,20 +278,30 @@ function captureBasket(){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    detectMultipleProducts(canvas, (results) => {
+    // ใช้ AI วิเคราะห์ภาพ
+    const predictions = await model.classify(canvas);
 
-        if(results.length === 0){
-            alert("ไม่พบสินค้า");
-            return;
-        }
+    console.log(predictions);
 
-        const names = results.map(r => r.name).join(", ");
+    if(predictions.length === 0){
+        alert("ไม่พบสินค้า");
+        return;
+    }
 
-        alert("AI พบสินค้า: " + names);
+    const top = predictions[0].className.toLowerCase();
 
-        console.log(results);
-    });
+    // match กับสินค้าในระบบ
+    const matched = products.find(p =>
+        top.includes(p.name.toLowerCase())
+    );
+
+    if(matched){
+        alert("AI พบสินค้า: " + matched.name);
+    } else {
+        alert("AI พบ: " + predictions[0].className);
+    }
 }
+
 
 function detectMultipleProducts(canvas, callback){
 
