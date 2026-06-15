@@ -243,3 +243,153 @@ function resetAll(){
 
 }
 
+function editProduct(id){
+
+    const product =
+    products.find(
+        p => p.id === id
+    );
+
+    if(!product) return;
+
+    const newName =
+    prompt(
+        "ชื่อสินค้า",
+        product.name
+    );
+
+    if(!newName) return;
+
+    const newPrice =
+    Number(
+        prompt(
+            "ราคา",
+            product.price
+        )
+    );
+
+    const newStock =
+    Number(
+        prompt(
+            "สต๊อก",
+            product.stock
+        )
+    );
+
+    product.name = newName;
+    product.price = newPrice;
+    product.stock = newStock;
+
+    saveProducts();
+
+    renderProducts();
+
+}
+
+document
+.getElementById("backupBtn")
+.addEventListener(
+    "click",
+    backupData
+);
+
+function backupData(){
+
+    const data = {
+
+        products
+
+    };
+
+    const blob =
+    new Blob(
+        [
+            JSON.stringify(
+                data,
+                null,
+                2
+            )
+        ],
+        {
+            type:
+            "application/json"
+        }
+    );
+
+    const a =
+    document.createElement("a");
+
+    a.href =
+    URL.createObjectURL(blob);
+
+    a.download =
+    "ai-sticker-pos-backup.json";
+
+    a.click();
+
+}
+
+document
+.getElementById(
+    "restoreBtn"
+)
+.addEventListener(
+    "click",
+    () => {
+
+        document
+        .getElementById(
+            "restoreFile"
+        )
+        .click();
+
+    }
+);
+
+document
+.getElementById(
+    "restoreFile"
+)
+.addEventListener(
+    "change",
+    restoreData
+);
+
+function restoreData(e){
+
+    const file =
+    e.target.files[0];
+
+    if(!file) return;
+
+    const reader =
+    new FileReader();
+
+    reader.onload =
+    function(event){
+
+        const data =
+        JSON.parse(
+            event.target.result
+        );
+
+        products =
+        data.products || [];
+
+        saveProducts();
+
+        renderProducts();
+
+        updateStats();
+
+        alert(
+            "โหลด Backup สำเร็จ"
+        );
+
+    };
+
+    reader.readAsText(file);
+
+}
+
+
