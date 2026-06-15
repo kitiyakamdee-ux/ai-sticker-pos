@@ -1,1 +1,76 @@
-Hello
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Sticker POS</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <h1>🎨 AI Sticker POS</h1>
+</header>
+
+<section class="dashboard">
+
+    <div class="card stat">
+        <h3>ยอดขายวันนี้</h3>
+        <p id="todaySales">0 บาท</p>
+    </div>
+
+    <div class="card stat">
+        <h3>ออเดอร์วันนี้</h3>
+        <p id="todayOrders">0</p>
+    </div>
+
+    <div class="card stat">
+        <h3>สินค้าทั้งหมด</h3>
+        <p id="totalProducts">0</p>
+    </div>
+
+</section>
+
+<section class="actions">
+
+    <button id="addProductBtn">
+        ➕ เพิ่มสินค้า
+    </button>
+
+    <button id="checkoutBtn">
+        🛒 Checkout
+    </button>
+
+    <button id="reportBtn">
+        📊 Reports
+    </button>
+
+</section>
+
+<section class="searchBar">
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="ค้นหาสินค้า..."
+    >
+
+</section>
+
+<section>
+
+    <h2>สินค้า</h2>
+
+    <div id="productGrid" class="product-grid">
+
+    </div>
+
+</section>
+
+<script src="app.js"></script>
+
+</body>
+</html>
