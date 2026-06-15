@@ -213,3 +213,33 @@ document
 
 });
 
+document
+.getElementById("resetBtn")
+.addEventListener("click", resetAll);
+
+function resetAll(){
+
+    if(
+        !confirm(
+            "ลบข้อมูลสินค้าทั้งหมดหรือไม่?"
+        )
+    ) return;
+
+    products = [];
+
+    saveProducts();
+
+    renderProducts();
+   
+    <button
+    class="edit-btn"
+    onclick="editProduct(${product.id})"
+    >
+    ✏️ แก้ไข
+    </button>
+    
+
+    updateStats();
+
+}
+
