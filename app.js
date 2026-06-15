@@ -1,622 +1,338 @@
 // ======================
-// AI Sticker POS V1
+// AI Sticker POS FIXED
 // ======================
 
-alert("APP JS VERSION NEW");
-
-let products = JSON.parse(
-    localStorage.getItem("products")
-) || [];
-
-// โหลดหน้า
-renderProducts();
-updateStats();
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let cameraStream = null;
 
 // ======================
-// ปุ่มเพิ่มสินค้า
+// INIT (กันปุ่มกดไม่ได้)
 // ======================
 
-document
-.getElementById("addProductBtn")
-.addEventListener("click", addProduct);
+document.addEventListener("DOMContentLoaded", () => {
+
+    renderProducts();
+    updateStats();
+
+    document.getElementById("addProductBtn").addEventListener("click", addProduct);
+    document.getElementById("resetBtn").addEventListener("click", resetAll);
+    document.getElementById("backupBtn").addEventListener("click", backupData);
+    document.getElementById("restoreBtn").addEventListener("click", () => {
+        document.getElementById("restoreFile").click();
+    });
+
+    document.getElementById("restoreFile").addEventListener("change", restoreData);
+
+    document.getElementById("cameraBtn").addEventListener("click", startCamera);
+    document.getElementById("captureBtn").addEventListener("click", captureBasket);
+
+    document.getElementById("searchInput").addEventListener("input", searchProduct);
+});
+
+// ======================
+// ADD PRODUCT
+// ======================
 
 function addProduct(){
 
     const name = prompt("ชื่อสินค้า");
-
     if(!name) return;
 
-    const price = Number(
-        prompt("ราคา")
-    );
+    const price = Number(prompt("ราคา"));
+    const stock = Number(prompt("จำนวนสต๊อก"));
 
-    const stock = Number(
-        prompt("จำนวนสต๊อก")
-    );
-
-    const imagePicker =
-    document.getElementById(
-        "imagePicker"
-    );
-
+    const imagePicker = document.getElementById("imagePicker");
     imagePicker.value = "";
 
     imagePicker.onchange = function(){
 
-        const file =
-        imagePicker.files[0];
-
+        const file = imagePicker.files[0];
         if(!file) return;
 
-        const reader =
-        new FileReader();
+        const reader = new FileReader();
 
         reader.onload = function(e){
 
-            const product = {
-
+            products.push({
                 id: Date.now(),
-
                 name,
-
                 price,
-
                 stock,
-
                 image: e.target.result
-
-            };
-
-            products.push(product);
+            });
 
             saveProducts();
-
             renderProducts();
-
             updateStats();
-
         };
 
         reader.readAsDataURL(file);
-
     };
 
     imagePicker.click();
-
 }
 
 // ======================
-// Save
+// SAVE / LOAD
 // ======================
 
 function saveProducts(){
-
-    localStorage.setItem(
-        "products",
-        JSON.stringify(products)
-    );
+    localStorage.setItem("products", JSON.stringify(products));
 }
 
 // ======================
-// Dashboard
+// STATS
 // ======================
 
 function updateStats(){
-
-    document.getElementById(
-        "totalProducts"
-    ).textContent = products.length;
+    document.getElementById("totalProducts").textContent = products.length;
 }
 
 // ======================
-// Render
+// RENDER
 // ======================
 
 function renderProducts(){
 
-    const grid =
-    document.getElementById(
-        "productGrid"
-    );
-
+    const grid = document.getElementById("productGrid");
     grid.innerHTML = "";
 
-    products.forEach(product => {
+    products.forEach(p => {
 
         grid.innerHTML += `
-
         <div class="product-card">
 
-            <img
-            src="${product.image}"
-            alt="${product.name}"
-            >
+            <img src="${p.image}">
 
             <div class="product-info">
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">฿${p.price}</div>
+                <div class="product-stock">คงเหลือ ${p.stock}</div>
 
-                <div class="product-name">
-                    ${product.name}
-                </div>
-
-                <div class="product-price">
-                    ฿${product.price}
-                </div>
-
-                <div class="product-stock">
-                คงเหลือ ${product.stock}
-                </div>
-
-                <button
-                class="edit-btn"
-                onclick="editProduct(${product.id})"
-                >
-                ✏️ แก้ไข
-                </button>
-
-                <button
-                class="delete-btn"
-                onclick="deleteProduct(${product.id})"
-                >
-                🗑️ ลบสินค้า
-                </button>
-
+                <button class="edit-btn" onclick="editProduct(${p.id})">✏️ แก้</button>
+                <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️ ลบ</button>
             </div>
 
         </div>
-
         `;
-
     });
-
 }
+
+// ======================
+// DELETE / EDIT
+// ======================
 
 function deleteProduct(id){
 
-    const confirmDelete = confirm(
-        "ต้องการลบสินค้านี้หรือไม่?"
-    );
+    if(!confirm("ลบสินค้า?")) return;
 
-    if(!confirmDelete) return;
-
-    products = products.filter(
-        product => product.id !== id
-    );
-
+    products = products.filter(p => p.id !== id);
     saveProducts();
-
     renderProducts();
-
     updateStats();
-
-}
-
-// ======================
-// Search
-// ======================
-
-document
-.getElementById("searchInput")
-.addEventListener("input", e => {
-
-    const keyword =
-    e.target.value.toLowerCase();
-
-    const cards =
-    document.querySelectorAll(
-        ".product-card"
-    );
-
-    cards.forEach(card => {
-
-        const text =
-        card.innerText.toLowerCase();
-
-        card.style.display =
-        text.includes(keyword)
-        ? "block"
-        : "none";
-
-    });
-
-});
-
-document
-.getElementById("resetBtn")
-.addEventListener("click", resetAll);
-
-function resetAll(){
-
-    if(
-        !confirm(
-            "ลบข้อมูลสินค้าทั้งหมดหรือไม่?"
-        )
-    ) return;
-
-    products = [];
-
-    saveProducts();
-
-    renderProducts();
-
-    updateStats();
-
 }
 
 function editProduct(id){
 
-    const product =
-    products.find(
-        p => p.id === id
-    );
+    const p = products.find(x => x.id === id);
+    if(!p) return;
 
-    if(!product) return;
-
-    const newName =
-    prompt(
-        "ชื่อสินค้า",
-        product.name
-    );
-
-    if(!newName) return;
-
-    const newPrice =
-    Number(
-        prompt(
-            "ราคา",
-            product.price
-        )
-    );
-
-    const newStock =
-    Number(
-        prompt(
-            "สต๊อก",
-            product.stock
-        )
-    );
-
-    product.name = newName;
-    product.price = newPrice;
-    product.stock = newStock;
+    p.name = prompt("ชื่อ", p.name) || p.name;
+    p.price = Number(prompt("ราคา", p.price)) || p.price;
+    p.stock = Number(prompt("สต๊อก", p.stock)) || p.stock;
 
     saveProducts();
-
     renderProducts();
-
 }
 
-document
-.getElementById("backupBtn")
-.addEventListener(
-    "click",
-    backupData
-);
+// ======================
+// SEARCH
+// ======================
+
+function searchProduct(e){
+
+    const keyword = e.target.value.toLowerCase();
+
+    document.querySelectorAll(".product-card").forEach(card => {
+
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(keyword) ? "" : "none";
+    });
+}
+
+// ======================
+// RESET
+// ======================
+
+function resetAll(){
+
+    if(!confirm("ลบทั้งหมด?")) return;
+
+    products = [];
+    saveProducts();
+    renderProducts();
+    updateStats();
+}
+
+// ======================
+// BACKUP
+// ======================
 
 function backupData(){
 
-    const data = {
-
-        products
-
-    };
-
-    const blob =
-    new Blob(
-        [
-            JSON.stringify(
-                data,
-                null,
-                2
-            )
-        ],
-        {
-            type:
-            "application/json"
-        }
+    const blob = new Blob(
+        [JSON.stringify({products}, null, 2)],
+        {type:"application/json"}
     );
 
-    const a =
-    document.createElement("a");
-
-    a.href =
-    URL.createObjectURL(blob);
-
-    a.download =
-    "ai-sticker-pos-backup.json";
-
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "backup.json";
     a.click();
-
 }
 
-document
-.getElementById(
-    "restoreBtn"
-)
-.addEventListener(
-    "click",
-    () => {
-
-        document
-        .getElementById(
-            "restoreFile"
-        )
-        .click();
-
-    }
-);
-
-document
-.getElementById(
-    "restoreFile"
-)
-.addEventListener(
-    "change",
-    restoreData
-);
+// ======================
+// RESTORE
+// ======================
 
 function restoreData(e){
 
-    const file =
-    e.target.files[0];
-
+    const file = e.target.files[0];
     if(!file) return;
 
-    const reader =
-    new FileReader();
+    const reader = new FileReader();
 
-    reader.onload =
-    function(event){
+    reader.onload = function(ev){
 
-        const data =
-        JSON.parse(
-            event.target.result
-        );
+        try{
+            const data = JSON.parse(ev.target.result);
+            products = data.products || [];
 
-        products =
-        data.products || [];
+            saveProducts();
+            renderProducts();
+            updateStats();
 
-        saveProducts();
-
-        renderProducts();
-
-        updateStats();
-
-        alert(
-            "โหลด Backup สำเร็จ"
-        );
-
+            alert("โหลดสำเร็จ");
+        }catch{
+            alert("ไฟล์เสีย");
+        }
     };
 
     reader.readAsText(file);
-
 }
 
 // ======================
-// Camera
+// CAMERA
 // ======================
-
-let cameraStream = null;
-
-document
-.getElementById("cameraBtn")
-.addEventListener(
-    "click",
-    startCamera
-);
 
 async function startCamera(){
 
+    const video = document.getElementById("camera");
+
     try{
 
-        const video =
-        document.getElementById(
-            "camera"
-        );
-
-        cameraStream =
-        await navigator
-        .mediaDevices
-        .getUserMedia({
-
-            video:{
-                facingMode:"environment"
-            }
-
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:"environment"}
         });
 
-        video.srcObject =
-        cameraStream;
+        video.srcObject = cameraStream;
+        video.style.display = "block";
 
-        video.style.display =
-        "block";
-
+    }catch(err){
+        alert("เปิดกล้องไม่ได้");
+        console.error(err);
     }
-    catch(error){
-
-        alert(
-            "เปิดกล้องไม่ได้"
-        );
-
-        console.error(error);
-
-    }
-
 }
 
 // ======================
-// Capture
+// AI MATCH (สำคัญ)
 // ======================
-
-document
-.getElementById("captureBtn")
-.addEventListener(
-    "click",
-    captureBasket
-);
 
 function captureBasket(){
 
-    if(!products.length){
-        alert("ไม่มีสินค้าในระบบ");
+    const video = document.getElementById("camera");
+
+    if(!video.srcObject){
+        alert("เปิดกล้องก่อน");
         return;
     }
 
-    findBestMatch((product, diff) => {
+    if(products.length === 0){
+        alert("ไม่มีสินค้า");
+        return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    const basketImage = canvas.toDataURL("image/jpeg");
+
+    findBestMatch(basketImage, (product) => {
 
         if(!product){
             alert("ไม่พบสินค้า");
             return;
         }
 
-        alert("AI พบสินค้า: " + product.name);
-
-        console.log("ความต่าง:", diff);
+        alert("AI พบ: " + product.name);
     });
 }
 
-    const video =
-    document.getElementById(
-        "camera"
-    );
+// ======================
+// SIMPLE IMAGE MATCH
+// ======================
 
-    if(!video.srcObject){
+function findBestMatch(imageSrc, callback){
 
-        alert(
-            "กรุณาเปิดกล้องก่อน"
-        );
+    let best = null;
+    let bestScore = Infinity;
+    let checked = 0;
 
-        return;
+    products.forEach(p => {
 
-    }
+        const img1 = new Image();
+        const img2 = new Image();
 
-    const canvas =
-    document.createElement(
-        "canvas"
-    );
+        img1.src = imageSrc;
+        img2.src = p.image;
 
-    canvas.width =
-    video.videoWidth;
+        img1.onload = img2.onload = () => {
 
-    canvas.height =
-    video.videoHeight;
+            const c1 = document.createElement("canvas");
+            const c2 = document.createElement("canvas");
 
-    const ctx =
-    canvas.getContext("2d");
+            c1.width = c2.width = 50;
+            c1.height = c2.height = 50;
 
-    ctx.drawImage(
-        video,
-        0,
-        0
-    );
+            const ctx1 = c1.getContext("2d");
+            const ctx2 = c2.getContext("2d");
 
-    const imageData =
-    canvas.toDataURL(
-        "image/jpeg",
-        0.8
-    );
+            ctx1.drawImage(img1, 0, 0, 50, 50);
+            ctx2.drawImage(img2, 0, 0, 50, 50);
 
-    const img =
-    document.getElementById(
-        "capturedImage"
-    );
+            const d1 = ctx1.getImageData(0,0,50,50).data;
+            const d2 = ctx2.getImageData(0,0,50,50).data;
 
-    img.src =
-    imageData;
+            let diff = 0;
 
-    img.style.display =
-    "block";
+            for(let i=0;i<d1.length;i+=4){
+                diff += Math.abs(d1[i]-d2[i]);
+            }
 
-    localStorage.setItem(
-        "lastBasketPhoto",
-        imageData
-    );
+            if(diff < bestScore){
+                bestScore = diff;
+                best = p;
+            }
 
-    alert(
-        "ถ่ายภาพสำเร็จ"
-    );
+            checked++;
 
-}
-
-function getImageData(imgSrc, callback){
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-
-    img.onload = function(){
-
-        const canvas = document.createElement("canvas");
-
-        canvas.width = 50;
-        canvas.height = 50;
-
-        const ctx = canvas.getContext("2d");
-
-        ctx.drawImage(img, 0, 0, 50, 50);
-
-        const data = ctx.getImageData(0, 0, 50, 50).data;
-
-        callback(data);
-    };
-
-    img.src = imgSrc;
-}
-
-function compareImages(data1, data2){
-
-    let diff = 0;
-
-    for(let i = 0; i < data1.length; i += 4){
-
-        diff += Math.abs(data1[i] - data2[i]);
-        diff += Math.abs(data1[i+1] - data2[i+1]);
-        diff += Math.abs(data1[i+2] - data2[i+2]);
-    }
-
-    return diff;
-}
-
-function findBestMatch(callback){
-
-    const video = document.getElementById("camera");
-
-    const canvas = document.createElement("canvas");
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-
-    ctx.drawImage(video, 0, 0);
-
-    const basketImage = canvas.toDataURL("image/jpeg");
-
-    getImageData(basketImage, (basketData) => {
-
-        let bestMatch = null;
-        let lowestDiff = Infinity;
-
-        let checked = 0;
-
-        products.forEach(product => {
-
-            getImageData(product.image, (productData) => {
-
-                const diff = compareImages(basketData, productData);
-
-                if(diff < lowestDiff){
-                    lowestDiff = diff;
-                    bestMatch = product;
-                }
-
-                checked++;
-
-                if(checked === products.length){
-
-                    callback(bestMatch, lowestDiff);
-                }
-            });
-        });
+            if(checked === products.length){
+                callback(best);
+            }
+        };
     });
 }
-
-
