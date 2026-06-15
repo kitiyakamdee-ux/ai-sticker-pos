@@ -2,6 +2,7 @@
 // AI Sticker POS V1
 // ======================
 
+alert("APP JS VERSION NEW");
 localStorage.clear();
 
 let products = JSON.parse(
