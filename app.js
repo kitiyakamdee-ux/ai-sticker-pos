@@ -160,13 +160,6 @@ function renderProducts(){
                 🗑️ ลบสินค้า
                 </button>
 
-                <button
-                class="delete-btn"
-                onclick="deleteProduct(${product.id})"
-             >
-                🗑️ ลบสินค้า
-                </button>
-
             </div>
 
         </div>
