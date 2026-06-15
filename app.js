@@ -2,6 +2,8 @@
 // AI Sticker POS V1
 // ======================
 
+localStorage.clear();
+
 let products = JSON.parse(
     localStorage.getItem("products")
 ) || [];
