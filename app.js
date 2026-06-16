@@ -330,14 +330,6 @@ function renderCart(){
 
 cartTotal.textContent = total;
 
-const finalPrice =
-document.getElementById(
-    "finalPrice"
-);
-
-if(finalPrice){
-
-    finalPrice.value = total;
 }
 
 // ======================
@@ -384,17 +376,6 @@ function checkout(method){
             }
         }
     });
-
-    const finalPrice =
-document.getElementById("finalPrice");
-
-if(
-    finalPrice &&
-    Number(finalPrice.value) > 0
-){
-    total =
-    Number(finalPrice.value);
-}
 
     sales.unshift({
 
