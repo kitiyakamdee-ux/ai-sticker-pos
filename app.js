@@ -385,6 +385,17 @@ function checkout(method){
         }
     });
 
+    const finalPrice =
+document.getElementById("finalPrice");
+
+if(
+    finalPrice &&
+    Number(finalPrice.value) > 0
+){
+    total =
+    Number(finalPrice.value);
+}
+
     sales.unshift({
 
         id: Date.now(),
