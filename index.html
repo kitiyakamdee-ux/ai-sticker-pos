@@ -8,6 +8,90 @@
 
 <link rel="stylesheet" href="style.css">
 
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    margin:20px;
+    background:#f5f5f5;
+}
+
+.header{
+    text-align:center;
+}
+
+.dashboard{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+    flex:1;
+    min-width:180px;
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+button{
+    padding:10px 15px;
+    cursor:pointer;
+}
+
+.product-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:15px;
+}
+
+.product-card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+.product-card img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+.cart-section,
+.history-section{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin-top:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+.sale-card{
+    border-bottom:1px solid #ddd;
+    padding:10px 0;
+}
+
+.checkout-btn{
+    width:100%;
+    padding:18px;
+    font-size:20px;
+    font-weight:bold;
+    margin-top:20px;
+}
+
+</style>
+
 </head>
 <body>
 
@@ -17,17 +101,17 @@
 
 <section class="dashboard">
 
-    <div class="card stat">
+    <div class="card">
         <h3>ยอดขายวันนี้</h3>
         <p id="todaySales">0 บาท</p>
     </div>
 
-    <div class="card stat">
+    <div class="card">
         <h3>ออเดอร์วันนี้</h3>
         <p id="todayOrders">0</p>
     </div>
 
-    <div class="card stat">
+    <div class="card">
         <h3>สินค้าทั้งหมด</h3>
         <p id="totalProducts">0</p>
     </div>
@@ -36,8 +120,8 @@
 
 <section class="actions">
 
-    <button id="resetBtn">
-        🗑️ Reset
+    <button id="addProductBtn">
+        ➕ เพิ่มสินค้า
     </button>
 
     <button id="backupBtn">
@@ -45,28 +129,48 @@
     </button>
 
     <button id="restoreBtn">
-        📂 Load Backup
+        📂 Restore
     </button>
 
-    <input
-        type="file"
-        id="restoreFile"
-        accept=".json"
-        style="display:none"
-    >
+    <button id="resetBtn">
+        🗑️ Reset สินค้า
+    </button>
 
-    <button id="addProductBtn">
-        ➕ เพิ่มสินค้า
+    <button onclick="exportCSV()">
+        📄 Export CSV
+    </button>
+
+    <button onclick="clearDailySales()">
+        🧹 ล้างยอดขายวันนี้
     </button>
 
 </section>
 
-<section class="searchBar">
+<input
+type="file"
+id="restoreFile"
+accept=".json"
+style="display:none"
+>
+
+<input
+type="file"
+id="imagePicker"
+accept="image/*"
+style="display:none"
+>
+
+<section>
 
     <input
-        type="text"
-        id="searchInput"
-        placeholder="ค้นหาสินค้า..."
+    type="text"
+    id="searchInput"
+    placeholder="ค้นหาสินค้า..."
+    style="
+    width:100%;
+    padding:12px;
+    margin-bottom:20px;
+    "
     >
 
 </section>
@@ -74,27 +178,13 @@
 <section>
 
     <h2>สินค้า</h2>
-  <section>
-
-    <h2>สินค้า</h2>
 
     <div
-        id="productGrid"
-        class="product-grid">
+    id="productGrid"
+    class="product-grid">
     </div>
 
-    </section>
-
 </section>
-
-<input
-    type="file"
-    id="imagePicker"
-    accept="image/*"
-    style="display:none"
->
-
-<hr>
 
 <section class="cart-section">
 
@@ -109,37 +199,21 @@
 
 </section>
 
-<script src="app.js"></script>
+<section class="history-section">
 
-<hr>
+    <h2>📋 ประวัติการขาย</h2>
 
-<button onclick="exportCSV()">
-📄 Export CSV
-</button>
+    <div id="salesHistory"></div>
 
-<button onclick="clearDailySales()">
-🧹 ล้างยอดขายวันนี้
-</button>
-
-<hr>
-
-<h2>📋 ประวัติการขาย</h2>
-
-<div id="salesHistory"></div>
-
-<hr>
+</section>
 
 <button
 id="checkoutBtn"
-style="
-width:100%;
-padding:16px;
-font-size:20px;
-font-weight:bold;
-margin-top:20px;
-">
+class="checkout-btn">
 🛒 Checkout
 </button>
-    
+
+<script src="app.js"></script>
+
 </body>
 </html>
