@@ -1,33 +1,49 @@
-// ======================
-// AI STABLE POS (FIXED)
-// ======================
-
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let cameraStream = null;
 
 // ======================
-// INIT
+// SAFE INIT (กันปุ่มพัง)
 // ======================
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    renderProducts();
-    updateStats();
+    console.log("✅ APP LOADED");
 
-    document.getElementById("addProductBtn").addEventListener("click", addProduct);
-    document.getElementById("resetBtn").addEventListener("click", resetAll);
-    document.getElementById("backupBtn").addEventListener("click", backupData);
+    const addBtn = document.getElementById("addProductBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const backupBtn = document.getElementById("backupBtn");
+    const restoreBtn = document.getElementById("restoreBtn");
+    const restoreFile = document.getElementById("restoreFile");
+    const cameraBtn = document.getElementById("cameraBtn");
+    const captureBtn = document.getElementById("captureBtn");
+    const searchInput = document.getElementById("searchInput");
 
-    document.getElementById("restoreBtn").addEventListener("click", () => {
-        document.getElementById("restoreFile").click();
+    console.log({
+        addBtn, resetBtn, backupBtn,
+        restoreBtn, cameraBtn, captureBtn
     });
 
-    document.getElementById("restoreFile").addEventListener("change", restoreData);
+    if(addBtn) addBtn.addEventListener("click", addProduct);
+    if(resetBtn) resetBtn.addEventListener("click", resetAll);
+    if(backupBtn) backupBtn.addEventListener("click", backupData);
 
-    document.getElementById("cameraBtn").addEventListener("click", startCamera);
-    document.getElementById("captureBtn").addEventListener("click", captureBasket);
+    if(restoreBtn){
+        restoreBtn.addEventListener("click", () => {
+            restoreFile.click();
+        });
+    }
 
-    document.getElementById("searchInput").addEventListener("input", searchProduct);
+    if(restoreFile){
+        restoreFile.addEventListener("change", restoreData);
+    }
+
+    if(cameraBtn) cameraBtn.addEventListener("click", startCamera);
+    if(captureBtn) captureBtn.addEventListener("click", captureBasket);
+
+    if(searchInput) searchInput.addEventListener("input", searchProduct);
+
+    renderProducts();
+    updateStats();
 });
 
 // ======================
@@ -43,6 +59,8 @@ function addProduct(){
     const stock = Number(prompt("จำนวนสต๊อก"));
 
     const imagePicker = document.getElementById("imagePicker");
+    if(!imagePicker) return;
+
     imagePicker.value = "";
 
     imagePicker.onchange = function(){
@@ -86,7 +104,8 @@ function saveProducts(){
 // ======================
 
 function updateStats(){
-    document.getElementById("totalProducts").textContent = products.length;
+    const el = document.getElementById("totalProducts");
+    if(el) el.textContent = products.length;
 }
 
 // ======================
@@ -96,6 +115,8 @@ function updateStats(){
 function renderProducts(){
 
     const grid = document.getElementById("productGrid");
+    if(!grid) return;
+
     grid.innerHTML = "";
 
     products.forEach(p => {
@@ -155,7 +176,6 @@ function searchProduct(e){
     const keyword = e.target.value.toLowerCase();
 
     document.querySelectorAll(".product-card").forEach(card => {
-
         const text = card.innerText.toLowerCase();
         card.style.display = text.includes(keyword) ? "" : "none";
     });
@@ -229,6 +249,7 @@ function restoreData(e){
 async function startCamera(){
 
     const video = document.getElementById("camera");
+    if(!video) return;
 
     try{
 
@@ -246,14 +267,13 @@ async function startCamera(){
 }
 
 // ======================
-// CAPTURE (NO AI - STABLE)
+// CAPTURE
 // ======================
 
 function captureBasket(){
 
     const video = document.getElementById("camera");
-
-    if(!video.srcObject){
+    if(!video || !video.srcObject){
         alert("เปิดกล้องก่อน");
         return;
     }
@@ -269,5 +289,5 @@ function captureBasket(){
 
     localStorage.setItem("lastBasketPhoto", imageData);
 
-    alert("ถ่ายภาพสำเร็จ (ระบบยังไม่เปิด AI)");
+    alert("ถ่ายภาพสำเร็จ");
 }
