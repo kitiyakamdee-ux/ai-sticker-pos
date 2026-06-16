@@ -1,4 +1,4 @@
-let cart = [];
+    let cart = [];
 
 let products =
 JSON.parse(localStorage.getItem("products")) || [];
@@ -36,8 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput =
     document.getElementById("searchInput");
 
-    const checkoutBtn =
-    document.getElementById("checkoutBtn");
+    const cashBtn =
+    document.getElementById("cashBtn");
+
+    const transferBtn =
+    document.getElementById("transferBtn");
+
+    const continueShopBtn =
+    document.getElementById("continueShopBtn");
+
+    const clearCartBtn =
+    document.getElementById("clearCartBtn");
 
     if(addBtn)
         addBtn.addEventListener("click", addProduct);
@@ -68,12 +77,35 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    if(checkoutBtn){
-        checkoutBtn.addEventListener(
-            "click",
-            checkout
-        );
-    }
+if(cashBtn){
+    cashBtn.addEventListener(
+        "click",
+        () => checkout("เงินสด")
+    );
+}
+
+if(transferBtn){
+    transferBtn.addEventListener(
+        "click",
+        () => checkout("เงินโอน")
+    );
+}
+
+if(continueShopBtn){
+    continueShopBtn.addEventListener(
+        "click",
+        () => {
+            alert("เลือกสินค้าเพิ่มได้เลย");
+        }
+    );
+}
+
+if(clearCartBtn){
+    clearCartBtn.addEventListener(
+        "click",
+        clearCart
+    );
+}
 
     renderProducts();
     renderCart();
@@ -303,35 +335,11 @@ function renderCart(){
 // CHECKOUT
 // ======================
 
-function checkout(){
+function checkout(method){
 
     if(cart.length === 0){
 
         alert("ไม่มีสินค้าในตะกร้า");
-        return;
-    }
-
-    const choice =
-    prompt(
-`เลือกการชำระเงิน
-
-1 = เงินสด
-2 = เงินโอน
-0 = ยกเลิก`
-    );
-
-    if(choice === "0")
-        return;
-
-    let method = "";
-
-    if(choice === "1"){
-        method = "เงินสด";
-    }
-    else if(choice === "2"){
-        method = "เงินโอน";
-    }
-    else{
         return;
     }
 
@@ -358,12 +366,18 @@ function checkout(){
     });
 
     sales.unshift({
+
         id: Date.now(),
-        date: new Date()
+
+        date:
+        new Date()
         .toLocaleString("th-TH"),
+
         method,
+
         total,
-        items: [...cart]
+
+        items:[...cart]
     });
 
     todaySales += total;
@@ -394,9 +408,11 @@ function checkout(){
     renderSalesHistory();
 
     alert(
-        `ชำระเงินสำเร็จ
-${method}
-ยอด ${total} บาท`
+        "ชำระเงินสำเร็จ\n\n" +
+        method +
+        "\nยอด " +
+        total +
+        " บาท"
     );
 }
 
@@ -662,3 +678,20 @@ function restoreData(e){
 
     reader.readAsText(file);
 }
+
+function clearCart(){
+
+    if(
+        !confirm(
+            "ล้างสินค้าทั้งหมดในตะกร้า?"
+        )
+    ){
+        return;
+    }
+
+    cart = [];
+
+    renderCart();
+}
+
+
