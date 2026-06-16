@@ -378,3 +378,57 @@ function deleteProduct(id) {
     renderProducts();
     updateStats();
 }
+
+function exportCSV() {
+
+    let csv = "วันที่,ช่องทาง,สินค้า,จำนวน,ยอดขาย\n";
+
+    let cashTotal = 0;
+    let transferTotal = 0;
+
+    const productStats = {};
+
+    sales.forEach(sale => {
+
+        if (sale.method === "เงินสด") cashTotal += sale.total;
+        if (sale.method === "เงินโอน") transferTotal += sale.total;
+
+        sale.items.forEach(item => {
+
+            csv += `"${sale.date}","${sale.method}","${item.name}",${item.qty},${item.price * item.qty}\n`;
+
+            productStats[item.name] = (productStats[item.name] || 0) + item.qty;
+        });
+    });
+
+    csv += "\n===== สรุปยอดขาย =====\n";
+    csv += `เงินสด,${cashTotal}\n`;
+    csv += `เงินโอน,${transferTotal}\n`;
+    csv += `รวมทั้งหมด,${cashTotal + transferTotal}\n`;
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `sales-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+}
+function clearDailySales() {
+
+    if (!confirm("ล้างยอดขายวันนี้?")) return;
+
+    todaySales = 0;
+    todayOrders = 0;
+    sales = [];
+
+    localStorage.setItem("todaySales", "0");
+    localStorage.setItem("todayOrders", "0");
+    localStorage.setItem("sales", JSON.stringify([]));
+
+    updateSalesDashboard();
+    renderSalesHistory();
+
+    alert("ล้างยอดขายเรียบร้อย");
+}
+
+
