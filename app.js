@@ -444,13 +444,22 @@ function renderSalesHistory(){
 
     sales.forEach(s => {
 
-        el.innerHTML += `
-        <div class="sale-card">
-            <b>${s.date}</b><br>
-            ${s.method}<br>
-            ฿${s.total}
-        </div>
-        `;
+el.innerHTML += `
+<div class="sale-card">
+
+    <b>${s.date}</b><br>
+
+    ${s.method}<br>
+
+    ฿${s.total}<br><br>
+
+    <button
+    onclick="deleteSale(${s.id})">
+    ❌ ลบบิล
+    </button>
+
+</div>
+`;
     });
 }
 
