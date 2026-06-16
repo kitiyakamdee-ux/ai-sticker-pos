@@ -1,3 +1,4 @@
+let discountValue = 0;
 let cart = [];
 
 let products = JSON.parse(localStorage.getItem("products")) || [];
@@ -22,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const transferBtn = document.getElementById("transferBtn");
     const continueShopBtn = document.getElementById("continueShopBtn");
     const clearCartBtn = document.getElementById("clearCartBtn");
+   
+    const discountBtn = document.getElementById("discountBtn");
 
     addBtn?.addEventListener("click", addProduct);
     resetBtn?.addEventListener("click", resetAll);
@@ -33,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     cashBtn?.addEventListener("click", () => checkout("เงินสด"));
     transferBtn?.addEventListener("click", () => checkout("เงินโอน"));
-    continueShopBtn?.addEventListener("click", () => alert("เลือกสินค้าเพิ่มได้เลย"));
+    continueShopBtn?.addEventListener("click", applyDiscount);
     clearCartBtn?.addEventListener("click", clearCart);
 
     renderProducts();
@@ -197,16 +200,34 @@ function renderCart() {
 
     list.innerHTML = "";
 
+    let total = 0;
+
     cart.forEach(item => {
+
+        total += item.qty * item.price;
+
         list.innerHTML += `
         <div>
             ${item.name} x ${item.qty} = ${item.qty * item.price}
         </div>`;
     });
 
-    const calc = calculateDiscountTotal(cart);
+    let finalTotal = total - discountValue;
+    if (finalTotal < 0) finalTotal = 0;
 
-    totalEl.textContent = calc.discounted;
+    totalEl.textContent = finalTotal;
+}
+
+function applyDiscount() {
+
+    if (cart.length === 0) {
+        alert("ไม่มีสินค้าในตะกร้า");
+        return;
+    }
+
+    discountValue += 15;
+
+    renderCart();
 }
 
 // ======================
@@ -220,8 +241,7 @@ function checkout(method) {
         return;
     }
 
-    const calc = calculateDiscountTotal(cart);
-    const total = calc.discounted;
+    const total = Number(document.getElementById("cartTotal").textContent);
 
     if (!confirm(`ยืนยันจ่าย ${total} บาท (${method})`)) return;
 
@@ -240,7 +260,8 @@ function checkout(method) {
         date: new Date().toLocaleString("th-TH"),
         method,
         total,
-        items: [...cart]
+        items: [...cart],
+        discount: discountValue
     });
 
     todaySales += total;
@@ -253,6 +274,7 @@ function checkout(method) {
     saveProducts();
 
     cart = [];
+    discountValue = 0;
 
     renderProducts();
     renderCart();
