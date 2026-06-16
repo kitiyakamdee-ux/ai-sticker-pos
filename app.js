@@ -714,4 +714,82 @@ function clearCart(){
     renderCart();
 }
 
+function deleteSale(id){
+
+    const sale =
+    sales.find(
+        s => s.id === id
+    );
+
+    if(!sale) return;
+
+    if(
+        !confirm(
+            "ยกเลิกบิลนี้?"
+        )
+    ){
+        return;
+    }
+
+    // คืนสต๊อกสินค้า
+
+    sale.items.forEach(item => {
+
+        const product =
+        products.find(
+            p => p.id === item.id
+        );
+
+        if(product){
+
+            product.stock += item.qty;
+        }
+    });
+
+    // หักยอดขายกลับ
+
+    todaySales -= sale.total;
+
+    if(todaySales < 0){
+        todaySales = 0;
+    }
+
+    todayOrders--;
+
+    if(todayOrders < 0){
+        todayOrders = 0;
+    }
+
+    // ลบบิล
+
+    sales = sales.filter(
+        s => s.id !== id
+    );
+
+    // save
+
+    localStorage.setItem(
+        "sales",
+        JSON.stringify(sales)
+    );
+
+    localStorage.setItem(
+        "todaySales",
+        todaySales
+    );
+
+    localStorage.setItem(
+        "todayOrders",
+        todayOrders
+    );
+
+    saveProducts();
+
+    renderProducts();
+    renderSalesHistory();
+    updateSalesDashboard();
+
+    alert("ลบบิลสำเร็จ");
+}
+
 
