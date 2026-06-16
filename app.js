@@ -1,8 +1,10 @@
-let model = null;
+let aiModel = null;
 
 async function loadAI(){
-    model = await mobilenet.load();
-    console.log("✅ AI READY");
+
+    aiModel = await cocoSsd.load();
+
+    console.log("AI READY");
 }
 
 loadAI();
@@ -281,34 +283,39 @@ async function startCamera(){
 
 async function captureBasket(){
 
-    if(!model){
-        alert("AI ยังโหลดไม่เสร็จ กรุณารอ 3–5 วินาที");
+    if(!aiModel){
+        alert("AI ยังโหลดไม่เสร็จ");
         return;
     }
 
-    const video = document.getElementById("camera");
+    const video =
+    document.getElementById("camera");
 
-    if(!video || !video.srcObject){
+    if(!video.srcObject){
         alert("เปิดกล้องก่อน");
         return;
     }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const predictions =
+    await aiModel.detect(video);
 
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
+    console.log(predictions);
 
-    const img = tf.browser.fromPixels(canvas);
-
-    const prediction = await model.classify(img);
-
-    console.log(prediction);
-
-    if(prediction.length > 0){
-        alert("AI พบ: " + prediction[0].className);
-    }else{
+    if(predictions.length === 0){
         alert("ไม่พบสินค้า");
+        return;
     }
+
+    const found = [];
+
+    predictions.forEach(item => {
+
+        found.push(item.class);
+
+    });
+
+    alert(
+        "AI พบ:\n\n" +
+        found.join("\n")
+    );
 }
