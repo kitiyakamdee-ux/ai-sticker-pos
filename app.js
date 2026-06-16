@@ -476,18 +476,61 @@ function renderSalesHistory(){
 function exportCSV(){
 
     let csv =
-    "วันที่,ช่องทาง,ยอดขาย\n";
+    "วันที่,ช่องทาง,สินค้า,จำนวน,ยอดขาย\n";
 
-    sales.forEach(s => {
+    let cashTotal = 0;
+    let transferTotal = 0;
 
-        csv +=
-        `"${s.date}","${s.method}",${s.total}\n`;
+    const productStats = {};
+
+    sales.forEach(sale => {
+
+        if(sale.method === "เงินสด"){
+            cashTotal += sale.total;
+        }
+
+        if(sale.method === "เงินโอน"){
+            transferTotal += sale.total;
+        }
+
+        sale.items.forEach(item => {
+
+            csv +=
+            `"${sale.date}","${sale.method}","${item.name}",${item.qty},${item.price * item.qty}\n`;
+
+            if(!productStats[item.name]){
+
+                productStats[item.name] = 0;
+            }
+
+            productStats[item.name] += item.qty;
+        });
+    });
+
+    csv += "\n";
+    csv += "===== สรุปยอดขาย =====\n";
+    csv += `เงินสด,${cashTotal}\n`;
+    csv += `เงินโอน,${transferTotal}\n`;
+    csv += `ยอดรวม,${cashTotal + transferTotal}\n`;
+
+    csv += "\n";
+    csv += "===== สินค้าขายดี =====\n";
+    csv += "สินค้า,จำนวนที่ขาย\n";
+
+    Object.entries(productStats)
+    .sort((a,b)=>b[1]-a[1])
+    .forEach(([name,qty])=>{
+
+        csv += `"${name}",${qty}\n`;
     });
 
     const blob =
     new Blob(
         [csv],
-        {type:"text/csv"}
+        {
+            type:
+            "text/csv;charset=utf-8;"
+        }
     );
 
     const a =
@@ -496,8 +539,13 @@ function exportCSV(){
     a.href =
     URL.createObjectURL(blob);
 
+    const today =
+    new Date()
+    .toISOString()
+    .slice(0,10);
+
     a.download =
-    "sales.csv";
+    `sales-report-${today}.csv`;
 
     a.click();
 }
