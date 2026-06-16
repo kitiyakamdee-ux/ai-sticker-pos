@@ -434,32 +434,38 @@ function checkout(method){
 function renderSalesHistory(){
 
     const el =
-    document.getElementById(
-        "salesHistory"
-    );
+    document.getElementById("salesHistory");
 
     if(!el) return;
+
+    if(sales.length === 0){
+
+        el.innerHTML =
+        "<p>ยังไม่มีประวัติการขาย</p>";
+
+        return;
+    }
 
     el.innerHTML = "";
 
     sales.forEach(s => {
 
-el.innerHTML += `
-<div class="sale-card">
+        el.innerHTML += `
+        <div class="sale-card">
 
-    <b>${s.date}</b><br>
+            <b>${s.date}</b><br>
 
-    ${s.method}<br>
+            ${s.method}<br>
 
-    ฿${s.total}<br><br>
+            ฿${s.total}<br><br>
 
-    <button
-    onclick="deleteSale(${s.id})">
-    ❌ ลบบิล
-    </button>
+            <button
+            onclick="deleteSale(${s.id})">
+            ❌ ลบบิล
+            </button>
 
-</div>
-`;
+        </div>
+        `;
     });
 }
 
