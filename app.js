@@ -21,25 +21,32 @@ let cameraStream = null;
 // INIT (กันปุ่มกดไม่ได้)
 // ======================
 
-document.addEventListener("DOMContentLoaded", () => {
+reader.onload = async function(e){
 
-    renderProducts();
-    updateStats();
+    const img = new Image();
+    img.src = e.target.result;
 
-    document.getElementById("addProductBtn").addEventListener("click", addProduct);
-    document.getElementById("resetBtn").addEventListener("click", resetAll);
-    document.getElementById("backupBtn").addEventListener("click", backupData);
-    document.getElementById("restoreBtn").addEventListener("click", () => {
-        document.getElementById("restoreFile").click();
-    });
+    img.onload = async () => {
 
-    document.getElementById("restoreFile").addEventListener("change", restoreData);
+        const tensor = tf.browser.fromPixels(img);
 
-    document.getElementById("cameraBtn").addEventListener("click", startCamera);
-    document.getElementById("captureBtn").addEventListener("click", captureBasket);
+        const features = model.infer(tensor, true); 
+        const vector = await features.data();
 
-    document.getElementById("searchInput").addEventListener("input", searchProduct);
-});
+        products.push({
+            id: Date.now(),
+            name,
+            price,
+            stock,
+            image: e.target.result,
+            vector: Array.from(vector) // 🔥 จำ feature
+        });
+
+        saveProducts();
+        renderProducts();
+        updateStats();
+    };
+};
 
 // ======================
 // ADD PRODUCT
@@ -262,17 +269,7 @@ async function startCamera(){
 
 async function captureBasket(){
 
-    if(!model){
-        alert("AI ยังโหลดไม่เสร็จ");
-        return;
-    }
-
     const video = document.getElementById("camera");
-
-    if(!video.srcObject){
-        alert("เปิดกล้องก่อน");
-        return;
-    }
 
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
@@ -281,27 +278,34 @@ async function captureBasket(){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    // ใช้ AI วิเคราะห์ภาพ
-    const predictions = await model.classify(canvas);
+    const tensor = tf.browser.fromPixels(canvas);
 
-    console.log(predictions);
+    const features = model.infer(tensor, true);
+    const vector = await features.data();
 
-    if(predictions.length === 0){
+    let bestMatch = null;
+    let bestScore = Infinity;
+
+    products.forEach(p => {
+
+        if(!p.vector) return;
+
+        let diff = 0;
+
+        for(let i=0;i<vector.length;i++){
+            diff += Math.abs(vector[i] - p.vector[i]);
+        }
+
+        if(diff < bestScore){
+            bestScore = diff;
+            bestMatch = p;
+        }
+    });
+
+    if(bestMatch){
+        alert("AI พบสินค้า: " + bestMatch.name);
+    }else{
         alert("ไม่พบสินค้า");
-        return;
-    }
-
-    const top = predictions[0].className.toLowerCase();
-
-    // match กับสินค้าในระบบ
-    const matched = products.find(p =>
-        top.includes(p.name.toLowerCase())
-    );
-
-    if(matched){
-        alert("AI พบสินค้า: " + matched.name);
-    } else {
-        alert("AI พบ: " + predictions[0].className);
     }
 }
 
