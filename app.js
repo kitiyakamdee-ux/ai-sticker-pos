@@ -556,23 +556,40 @@ function exportCSV(){
 
 function clearDailySales(){
 
-    if(!confirm("ล้างยอดขายวันนี้?"))
+    if(
+        !confirm(
+            "Export CSV แล้วหรือยัง?\n\nกด OK เพื่อล้างยอดขายทั้งหมด"
+        )
+    ){
         return;
+    }
 
     todaySales = 0;
     todayOrders = 0;
 
+    sales = [];
+
     localStorage.setItem(
         "todaySales",
-        0
+        "0"
     );
 
     localStorage.setItem(
         "todayOrders",
-        0
+        "0"
+    );
+
+    localStorage.setItem(
+        "sales",
+        JSON.stringify([])
     );
 
     updateSalesDashboard();
+    renderSalesHistory();
+
+    alert(
+        "ล้างยอดขายและประวัติการขายเรียบร้อย"
+    );
 }
 
 // ======================
