@@ -296,10 +296,12 @@ async function captureBasket(){
         return;
     }
 
-    const predictions =
-    await aiModel.detect(video);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const predictions = await aiModel.detect(video);
 
     console.log(predictions);
+    alert(JSON.stringify(predictions));
 
     if(predictions.length === 0){
         alert("ไม่พบสินค้า");
