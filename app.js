@@ -61,10 +61,12 @@ function updateStats() {
 }
 
 function updateSalesDashboard() {
-    document.getElementById("todaySales").textContent =
-        todaySales.toLocaleString() + " บาท";
 
-    document.getElementById("todayOrders").textContent = todayOrders;
+    const salesEl = document.getElementById("todaySales");
+    const ordersEl = document.getElementById("todayOrders");
+
+    if (salesEl) salesEl.textContent = todaySales.toLocaleString() + " บาท";
+    if (ordersEl) ordersEl.textContent = todayOrders;
 }
 
 // ======================
@@ -80,7 +82,6 @@ function addProduct() {
     const stock = Number(prompt("จำนวนสต๊อก")) || 0;
 
     const imagePicker = document.getElementById("imagePicker");
-
     imagePicker.value = "";
 
     imagePicker.onchange = () => {
@@ -163,7 +164,7 @@ function addToCart(id) {
 }
 
 // ======================
-// CART + DISCOUNT (5 ชิ้น = 100 บาท)
+// CART + DISCOUNT
 // ======================
 
 function renderCart() {
@@ -188,17 +189,14 @@ function renderCart() {
         </div>`;
     });
 
-    // ===== DISCOUNT RULE =====
-    let sets = Math.floor(totalQty / 5);
-    let remain = totalQty % 5;
+    // ===== FIX DISCOUNT (CLEAN VERSION) =====
+    const sets = Math.floor(totalQty / 5);
+    const remain = totalQty % 5;
 
-let sets = Math.floor(totalQty / 5);
-let remain = totalQty % 5;
+    const discountedTotal = (sets * 100) + (remain * 20);
 
-let discountedTotal = (sets * 100) + (remain * 20);
-
-totalEl.textContent = discountedTotal;
-totalEl.dataset.total = discountedTotal;
+    totalEl.textContent = discountedTotal;
+    totalEl.dataset.total = discountedTotal;
 }
 
 // ======================
@@ -315,6 +313,7 @@ function resetAll() {
     products = [];
     saveProducts();
     renderProducts();
+    updateStats();
 }
 
 function backupData() {
