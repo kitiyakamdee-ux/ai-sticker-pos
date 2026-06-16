@@ -165,4 +165,42 @@ body{
     cursor:pointer;
 }
 
+.checkout-actions{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-top:20px;
+}
+
+.checkout-actions button{
+    border:none;
+    border-radius:12px;
+    padding:15px;
+    font-size:16px;
+    font-weight:bold;
+    color:white;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.checkout-actions button:hover{
+    transform:translateY(-2px);
+}
+
+#cashBtn{
+    background:#28a745;
+}
+
+#transferBtn{
+    background:#007bff;
+}
+
+#continueShopBtn{
+    background:#ff9800;
+}
+
+#clearCartBtn{
+    background:#dc3545;
+}
+
 
