@@ -1,3 +1,5 @@
+let cart = [];
+
 let aiModel = null;
 
 async function loadAI(){
