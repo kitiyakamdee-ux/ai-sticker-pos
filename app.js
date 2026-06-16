@@ -192,9 +192,13 @@ function renderCart() {
     let sets = Math.floor(totalQty / 5);
     let remain = totalQty % 5;
 
-    let total = (sets * 100) + (remain * 20);
+let sets = Math.floor(totalQty / 5);
+let remain = totalQty % 5;
 
-    totalEl.textContent = total;
+let discountedTotal = (sets * 100) + (remain * 20);
+
+totalEl.textContent = discountedTotal;
+totalEl.dataset.total = discountedTotal;
 }
 
 // ======================
@@ -208,7 +212,7 @@ function checkout(method) {
         return;
     }
 
-    const total = Number(document.getElementById("cartTotal").textContent);
+    const total = Number(document.getElementById("cartTotal").dataset.total || 0);
 
     if (!confirm(`ยืนยันจ่าย ${total} บาท (${method})`)) return;
 
