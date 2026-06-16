@@ -1,18 +1,5 @@
 let cart = [];
-
-let aiModel = null;
-
-async function loadAI(){
-
-    aiModel = await cocoSsd.load();
-
-    console.log("AI READY");
-}
-
-loadAI();
-
 let products = JSON.parse(localStorage.getItem("products")) || [];
-let cameraStream = null;
 
 // ======================
 // SAFE INIT (กันปุ่มพัง)
@@ -27,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const backupBtn = document.getElementById("backupBtn");
     const restoreBtn = document.getElementById("restoreBtn");
     const restoreFile = document.getElementById("restoreFile");
-    const cameraBtn = document.getElementById("cameraBtn");
-    const captureBtn = document.getElementById("captureBtn");
     const searchInput = document.getElementById("searchInput");
 
     console.log({
@@ -49,9 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if(restoreFile){
         restoreFile.addEventListener("change", restoreData);
     }
-
-    if(cameraBtn) cameraBtn.addEventListener("click", startCamera);
-    if(captureBtn) captureBtn.addEventListener("click", captureBasket);
 
     if(searchInput) searchInput.addEventListener("input", searchProduct);
 
@@ -144,10 +126,23 @@ function renderProducts(){
                 <div class="product-price">฿${p.price}</div>
                 <div class="product-stock">คงเหลือ ${p.stock}</div>
 
-                <button class="add-cart-btn" onclick="addToCart(${p.id})">🛒 เพิ่มเข้าตะกร้า
-                <button class="edit-btn" onclick="editProduct(${p.id})">✏️ แก้</button>
-                <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️ ลบ</button>
-</button>
+                <button
+                class="add-cart-btn"
+                onclick="addToCart(${p.id})">
+                🛒 เพิ่มเข้าตะกร้า
+                </button>
+
+                <button
+                class="edit-btn"
+                onclick="editProduct(${p.id})">
+                ✏️ แก้
+                </button>
+
+                <button
+                class="delete-btn"
+                onclick="deleteProduct(${p.id})">
+                🗑️ ลบ
+                </button>
             </div>
 
         </div>
@@ -257,82 +252,6 @@ function restoreData(e){
     reader.readAsText(file);
 }
 
-// ======================
-// CAMERA
-// ======================
-
-async function startCamera(){
-
-    const video = document.getElementById("camera");
-    if(!video) return;
-
-    try{
-
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video:{facingMode:"environment"}
-        });
-
-        video.srcObject = cameraStream;
-        video.style.display = "block";
-
-    }catch(err){
-        alert("เปิดกล้องไม่ได้");
-        console.error(err);
-    }
-}
-
-// ======================
-// CAPTURE
-// ======================
-
-async function captureBasket(){
-
-    if(!aiModel){
-        alert("AI ยังโหลดไม่เสร็จ");
-        return;
-    }
-
-    const video =
-    document.getElementById("camera");
-
-    if(!video.srcObject){
-        alert("เปิดกล้องก่อน");
-        return;
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const predictions = await aiModel.detect(video);
-
-    console.log(predictions);
-    alert(JSON.stringify(predictions));
-
-    if(predictions.length === 0){
-        alert("ไม่พบสินค้า");
-        return;
-    }
-
-    const found = [];
-
-    predictions.forEach(item => {
-
-        found.push(item.class);
-
-    });
-
-    alert(
-        "AI พบ:\n\n" +
-        found.join("\n")
-    );
-}
-
-document
-.getElementById("checkoutBtn")
-.addEventListener(
-    "click",
-    checkout
-);
-
 function checkout(){
 
     if(cart.length === 0){
@@ -402,6 +321,43 @@ function renderCart(){
     });
 
     totalEl.textContent = total;
+}
+
+function addToCart(id){
+
+    const product =
+    products.find(
+        p => p.id === id
+    );
+
+    if(!product) return;
+
+    const existing =
+    cart.find(
+        item => item.id === id
+    );
+
+    if(existing){
+
+        existing.qty++;
+
+    }else{
+
+        cart.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            qty: 1
+        });
+
+    }
+
+    renderCart();
+
+    alert(
+        product.name +
+        " เพิ่มเข้าตะกร้าแล้ว"
+    );
 }
 
 
