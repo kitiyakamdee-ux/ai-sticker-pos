@@ -1,5 +1,24 @@
 let cart = [];
-let products = JSON.parse(localStorage.getItem("products")) || [];
+
+let products =
+JSON.parse(
+localStorage.getItem("products")
+) || [];
+
+let sales =
+JSON.parse(
+localStorage.getItem("sales")
+) || [];
+
+let todaySales =
+Number(
+localStorage.getItem("todaySales")
+) || 0;
+
+let todayOrders =
+Number(
+localStorage.getItem("todayOrders")
+) || 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -34,7 +53,29 @@ if(checkoutBtn){
 }
 
 renderProducts();
+    
 updateStats();
+    function updateSalesDashboard(){
+
+const salesEl =
+document.getElementById("todaySales");
+
+const ordersEl =
+document.getElementById("todayOrders");
+
+if(salesEl){
+    salesEl.textContent =
+    todaySales.toLocaleString()
+    + " บาท";
+}
+
+if(ordersEl){
+    ordersEl.textContent =
+    todayOrders;
+}
+
+}
+    
 renderCart();
 
 });
@@ -230,7 +271,34 @@ if(cart.length === 0){
     return;
 }
 
+const payMethod =
+prompt(
+    "วิธีชำระเงิน\n\n1 = เงินสด\n2 = เงินโอน\n0 = ยกเลิก"
+);
+
+if(payMethod === "0"){
+    return;
+}
+
+let method = "";
+
+if(payMethod === "1"){
+    method = "เงินสด";
+}
+else if(payMethod === "2"){
+    method = "เงินโอน";
+}
+else{
+    alert("ยกเลิก");
+    return;
+}
+
+let total = 0;
+
 cart.forEach(item => {
+
+    total +=
+    item.price * item.qty;
 
     const product =
     products.find(
@@ -247,6 +315,40 @@ cart.forEach(item => {
     }
 });
 
+sales.unshift({
+
+    id: Date.now(),
+
+    date:
+    new Date()
+    .toLocaleString("th-TH"),
+
+    method,
+
+    total,
+
+    items:
+    [...cart]
+});
+
+todaySales += total;
+todayOrders++;
+
+localStorage.setItem(
+    "todaySales",
+    todaySales
+);
+
+localStorage.setItem(
+    "todayOrders",
+    todayOrders
+);
+
+localStorage.setItem(
+    "sales",
+    JSON.stringify(sales)
+);
+
 saveProducts();
 
 cart = [];
@@ -254,7 +356,16 @@ cart = [];
 renderProducts();
 renderCart();
 
-alert("ชำระเงินสำเร็จ");
+updateSalesDashboard();
+renderSalesHistory();
+
+alert(
+    "ชำระเงินสำเร็จ\n" +
+    method +
+    "\nยอด " +
+    total +
+    " บาท"
+);
 
 }
 
@@ -305,9 +416,11 @@ products.filter(
     p => p.id !== id
 );
 
-saveProducts();
 renderProducts();
 updateStats();
+renderCart();
+updateSalesDashboard();
+renderSalesHistory();
 
 }
 
@@ -423,3 +536,88 @@ reader.onload = (ev) => {
 reader.readAsText(file);
 
 }
+
+function renderSalesHistory(){
+
+const el =
+document.getElementById(
+    "salesHistory"
+);
+
+if(!el) return;
+
+el.innerHTML = "";
+
+sales.forEach(s => {
+
+    el.innerHTML += `
+    <div class="sale-card">
+        <b>${s.date}</b><br>
+        ${s.method}<br>
+        ฿${s.total}
+    </div>
+    `;
+});
+
+}
+
+function exportCSV(){
+
+let csv =
+"วันที่,ช่องทาง,ยอดขาย\n";
+
+sales.forEach(s => {
+
+    csv +=
+    `"${s.date}","${s.method}",${s.total}\n`;
+});
+
+const blob =
+new Blob(
+    [csv],
+    {
+        type:"text/csv"
+    }
+);
+
+const a =
+document.createElement("a");
+
+a.href =
+URL.createObjectURL(blob);
+
+a.download =
+"sales.csv";
+
+a.click();
+
+}
+
+function clearDailySales(){
+
+if(
+    !confirm(
+        "ล้างยอดขายวันนี้?"
+    )
+){
+    return;
+}
+
+todaySales = 0;
+todayOrders = 0;
+
+localStorage.setItem(
+    "todaySales",
+    0
+);
+
+localStorage.setItem(
+    "todayOrders",
+    0
+);
+
+updateSalesDashboard();
+
+}
+
+
