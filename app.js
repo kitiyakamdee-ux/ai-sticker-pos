@@ -328,7 +328,16 @@ function renderCart(){
         `;
     });
 
-    cartTotal.textContent = total;
+cartTotal.textContent = total;
+
+const finalPrice =
+document.getElementById(
+    "finalPrice"
+);
+
+if(finalPrice){
+
+    finalPrice.value = total;
 }
 
 // ======================
