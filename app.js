@@ -3,11 +3,14 @@
 // ======================
 
 let model;
+let productFeatures = [];
 
 async function loadAI(){
     model = await mobilenet.load();
-    console.log("AI Ready");
+    console.log("AI Ready (feature mode)");
 }
+
+loadAI();
 
 loadAI();
 
