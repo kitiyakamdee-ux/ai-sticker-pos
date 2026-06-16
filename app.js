@@ -283,11 +283,33 @@ function deleteSale(id) {
 
     if (!confirm("ลบบิล?")) return;
 
+    // ลบบิล
     sales = sales.filter(x => x.id !== id);
 
+    // บันทึกใหม่
     localStorage.setItem("sales", JSON.stringify(sales));
 
+    // 🔥 RE-CALCULATE ทั้งหมด (สำคัญมาก)
+    recalcToday();
+
     renderSalesHistory();
+}
+
+function recalcToday() {
+
+    let total = 0;
+
+    sales.forEach(s => {
+        total += s.total;
+    });
+
+    todaySales = total;
+    todayOrders = sales.length;
+
+    localStorage.setItem("todaySales", todaySales);
+    localStorage.setItem("todayOrders", todayOrders);
+
+    updateSalesDashboard();
 }
 
 // ======================
