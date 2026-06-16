@@ -144,8 +144,10 @@ function renderProducts(){
                 <div class="product-price">฿${p.price}</div>
                 <div class="product-stock">คงเหลือ ${p.stock}</div>
 
+                <button class="add-cart-btn" onclick="addToCart(${p.id})">🛒 เพิ่มเข้าตะกร้า
                 <button class="edit-btn" onclick="editProduct(${p.id})">✏️ แก้</button>
                 <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️ ลบ</button>
+</button>
             </div>
 
         </div>
@@ -323,3 +325,83 @@ async function captureBasket(){
         found.join("\n")
     );
 }
+
+document
+.getElementById("checkoutBtn")
+.addEventListener(
+    "click",
+    checkout
+);
+
+function checkout(){
+
+    if(cart.length === 0){
+
+        alert("ไม่มีสินค้า");
+
+        return;
+    }
+
+    cart.forEach(item => {
+
+        const product =
+        products.find(
+            p => p.id === item.id
+        );
+
+        if(product){
+
+            product.stock -= item.qty;
+
+            if(product.stock < 0){
+
+                product.stock = 0;
+            }
+        }
+    });
+
+    saveProducts();
+
+    renderProducts();
+
+    cart = [];
+
+    renderCart();
+
+    alert("ขายสำเร็จ");
+}
+
+function renderCart(){
+
+    const cartList =
+    document.getElementById("cartList");
+
+    const totalEl =
+    document.getElementById("cartTotal");
+
+    if(!cartList || !totalEl) return;
+
+    cartList.innerHTML = "";
+
+    let total = 0;
+
+    cart.forEach(item => {
+
+        const subtotal =
+        item.price * item.qty;
+
+        total += subtotal;
+
+        cartList.innerHTML += `
+        <div class="cart-item">
+            ${item.name}
+            x ${item.qty}
+            = ฿${subtotal}
+        </div>
+        `;
+    });
+
+    totalEl.textContent = total;
+}
+
+
