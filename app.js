@@ -1,52 +1,34 @@
 // ======================
-// AI Sticker POS FIXED
+// AI STABLE POS (FIXED)
 // ======================
-
-let model;
-let productFeatures = [];
-
-async function loadAI(){
-    model = await mobilenet.load();
-    console.log("AI Ready (feature mode)");
-}
-
-loadAI();
-
-loadAI();
 
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let cameraStream = null;
 
 // ======================
-// INIT (กันปุ่มกดไม่ได้)
+// INIT
 // ======================
 
-reader.onload = async function(e){
+document.addEventListener("DOMContentLoaded", () => {
 
-    const img = new Image();
-    img.src = e.target.result;
+    renderProducts();
+    updateStats();
 
-    img.onload = async () => {
+    document.getElementById("addProductBtn").addEventListener("click", addProduct);
+    document.getElementById("resetBtn").addEventListener("click", resetAll);
+    document.getElementById("backupBtn").addEventListener("click", backupData);
 
-        const tensor = tf.browser.fromPixels(img);
+    document.getElementById("restoreBtn").addEventListener("click", () => {
+        document.getElementById("restoreFile").click();
+    });
 
-        const features = model.infer(tensor, true); 
-        const vector = await features.data();
+    document.getElementById("restoreFile").addEventListener("change", restoreData);
 
-        products.push({
-            id: Date.now(),
-            name,
-            price,
-            stock,
-            image: e.target.result,
-            vector: Array.from(vector) // 🔥 จำ feature
-        });
+    document.getElementById("cameraBtn").addEventListener("click", startCamera);
+    document.getElementById("captureBtn").addEventListener("click", captureBasket);
 
-        saveProducts();
-        renderProducts();
-        updateStats();
-    };
-};
+    document.getElementById("searchInput").addEventListener("input", searchProduct);
+});
 
 // ======================
 // ADD PRODUCT
@@ -264,12 +246,17 @@ async function startCamera(){
 }
 
 // ======================
-// AI MATCH (สำคัญ)
+// CAPTURE (NO AI - STABLE)
 // ======================
 
-async function captureBasket(){
+function captureBasket(){
 
     const video = document.getElementById("camera");
+
+    if(!video.srcObject){
+        alert("เปิดกล้องก่อน");
+        return;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
@@ -278,216 +265,9 @@ async function captureBasket(){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    const tensor = tf.browser.fromPixels(canvas);
+    const imageData = canvas.toDataURL("image/jpeg", 0.8);
 
-    const features = model.infer(tensor, true);
-    const vector = await features.data();
+    localStorage.setItem("lastBasketPhoto", imageData);
 
-    let bestMatch = null;
-    let bestScore = Infinity;
-
-    products.forEach(p => {
-
-        if(!p.vector) return;
-
-        let diff = 0;
-
-        for(let i=0;i<vector.length;i++){
-            diff += Math.abs(vector[i] - p.vector[i]);
-        }
-
-        if(diff < bestScore){
-            bestScore = diff;
-            bestMatch = p;
-        }
-    });
-
-    if(bestMatch){
-        alert("AI พบสินค้า: " + bestMatch.name);
-    }else{
-        alert("ไม่พบสินค้า");
-    }
+    alert("ถ่ายภาพสำเร็จ (ระบบยังไม่เปิด AI)");
 }
-
-
-function detectMultipleProducts(canvas, callback){
-
-    const W = canvas.width;
-    const H = canvas.height;
-
-    const gridSize = 2;
-
-    const cellW = W / gridSize;
-    const cellH = H / gridSize;
-
-    let results = [];
-    let tasks = 0;
-    let finished = 0;
-
-    for(let gx=0; gx<gridSize; gx++){
-        for(let gy=0; gy<gridSize; gy++){
-
-            tasks++;
-
-            const cell = document.createElement("canvas");
-            cell.width = 50;
-            cell.height = 50;
-
-            const cctx = cell.getContext("2d");
-
-            cctx.drawImage(
-                canvas,
-                gx * cellW,
-                gy * cellH,
-                cellW,
-                cellH,
-                0,
-                0,
-                50,
-                50
-            );
-
-            const cellData = cctx.getImageData(0,0,50,50).data;
-
-            matchCell(cellData, (bestProduct) => {
-
-                if(bestProduct){
-                    results.push(bestProduct);
-                }
-
-                finished++;
-
-                if(finished === tasks){
-
-                    const unique = [];
-                    const seen = new Set();
-
-                    results.forEach(p => {
-                        if(!seen.has(p.id)){
-                            seen.add(p.id);
-                            unique.push(p);
-                        }
-                    });
-
-                    callback(unique);
-                }
-            });
-        }
-    }
-}
-
-// ======================
-// SIMPLE IMAGE MATCH
-// ======================
-
-function findBestMatch(imageSrc, callback){
-
-    const results = [];
-
-    const canvasA = document.createElement("canvas");
-    const ctxA = canvasA.getContext("2d");
-
-    const imgA = new Image();
-    imgA.src = imageSrc;
-
-    imgA.onload = () => {
-
-        canvasA.width = 50;
-        canvasA.height = 50;
-
-        ctxA.drawImage(imgA, 0, 0, 50, 50);
-
-        const dataA = ctxA.getImageData(0,0,50,50).data;
-
-        let done = 0;
-
-        products.forEach(p => {
-
-            const imgB = new Image();
-            imgB.src = p.image;
-
-            imgB.onload = () => {
-
-                const canvasB = document.createElement("canvas");
-                const ctxB = canvasB.getContext("2d");
-
-                canvasB.width = 50;
-                canvasB.height = 50;
-
-                ctxB.drawImage(imgB, 0, 0, 50, 50);
-
-                const dataB = ctxB.getImageData(0,0,50,50).data;
-
-                let diff = 0;
-
-                for(let i=0;i<dataA.length;i+=4){
-
-                    // grayscale compare (แม่นขึ้น)
-                    const a = (dataA[i] + dataA[i+1] + dataA[i+2]) / 3;
-                    const b = (dataB[i] + dataB[i+1] + dataB[i+2]) / 3;
-
-                    diff += Math.abs(a - b);
-                }
-
-                results.push({product:p, diff});
-
-                done++;
-
-                if(done === products.length){
-
-                    results.sort((a,b)=>a.diff-b.diff);
-
-                    callback(results[0].product);
-                }
-            };
-        });
-    };
-}
-
-function matchCell(cellData, callback){
-
-    let best = null;
-    let bestDiff = Infinity;
-
-    let loaded = 0;
-
-    products.forEach(p => {
-
-        const img = new Image();
-        img.src = p.image;
-
-        img.onload = () => {
-
-            const canvas = document.createElement("canvas");
-            canvas.width = 50;
-            canvas.height = 50;
-
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, 50, 50);
-
-            const data = ctx.getImageData(0,0,50,50).data;
-
-            let diff = 0;
-
-            for(let i=0;i<cellData.length;i+=4){
-
-                const a = (cellData[i]+cellData[i+1]+cellData[i+2])/3;
-                const b = (data[i]+data[i+1]+data[i+2])/3;
-
-                diff += Math.abs(a-b);
-            }
-
-            if(diff < bestDiff){
-                bestDiff = diff;
-                best = p;
-            }
-
-            loaded++;
-
-            if(loaded === products.length){
-                callback(best);
-            }
-        };
-    });
-}
-
