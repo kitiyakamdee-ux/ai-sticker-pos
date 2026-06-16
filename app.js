@@ -316,15 +316,27 @@ function deleteSale(id) {
 
     if (!confirm("ลบบิล?")) return;
 
-    // ลบบิล
+    // 🔥 คืนสต๊อกสินค้า
+    s.items.forEach(item => {
+
+        const product = products.find(p => p.id === item.id);
+
+        if (product) {
+            product.stock += item.qty;
+        }
+    });
+
+    // ลบบิลออกจากระบบ
     sales = sales.filter(x => x.id !== id);
 
-    // บันทึกใหม่
     localStorage.setItem("sales", JSON.stringify(sales));
 
-    // 🔥 RE-CALCULATE ทั้งหมด (สำคัญมาก)
+    // 🔥 รีคำนวณยอดวันนี้ใหม่ (สำคัญ)
     recalcToday();
 
+    // อัปเดตหน้าจอ
+    saveProducts();
+    renderProducts();
     renderSalesHistory();
 }
 
