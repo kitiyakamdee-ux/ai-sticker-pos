@@ -309,25 +309,31 @@ function renderCart(){
 
     cartList.innerHTML = "";
 
-    let total = 0;
+let total = 0;
 
-    cart.forEach(item => {
+let totalQty = 0;
 
-        const subtotal =
-        item.price * item.qty;
+cart.forEach(item => {
+    totalQty += item.qty;
+});
 
-        total += subtotal;
+cart.forEach(item => {
+    const subtotal = item.price * item.qty;
+    total += subtotal;
+});
 
-        cartList.innerHTML += `
-        <div>
-            ${item.name}
-            x ${item.qty}
-            =
-            ฿${subtotal}
-        </div>
-        `;
-    });
+// ===== DISCOUNT RULE =====
+// ตัวอย่าง: ซื้อครบ 5 ชิ้น = 100 บาท
+let discount = 0;
 
+if (totalQty >= 5) {
+    const normalPrice = total;
+    const promoPrice = Math.floor(totalQty / 5) * 100 + (totalQty % 5) * 20;
+    discount = normalPrice - promoPrice;
+    total = promoPrice;
+}
+
+// แสดงผล
 cartTotal.textContent = total;
 
 }
