@@ -431,4 +431,6 @@ function clearDailySales() {
     alert("ล้างยอดขายเรียบร้อย");
 }
 
+window.exportCSV = exportCSV;
+window.clearDailySales = clearDailySales;
 
