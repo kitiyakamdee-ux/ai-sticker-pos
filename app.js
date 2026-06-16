@@ -401,9 +401,10 @@ function deleteProduct(id) {
     updateStats();
 }
 
-function exportCSV() {
+function exportCSV(){
 
-    let csv = "วันที่,ช่องทาง,สินค้า,จำนวน,ยอดขาย\n";
+    let csv =
+    "วันที่,ช่องทาง,สินค้า,จำนวน,ยอดขาย\n";
 
     let cashTotal = 0;
     let transferTotal = 0;
@@ -412,29 +413,71 @@ function exportCSV() {
 
     sales.forEach(sale => {
 
-        if (sale.method === "เงินสด") cashTotal += sale.total;
-        if (sale.method === "เงินโอน") transferTotal += sale.total;
+        if(sale.method === "เงินสด"){
+            cashTotal += sale.total;
+        }
+
+        if(sale.method === "เงินโอน"){
+            transferTotal += sale.total;
+        }
 
         sale.items.forEach(item => {
 
-            csv += `"${sale.date}","${sale.method}","${item.name}",${item.qty},${item.price * item.qty}\n`;
+            csv +=
+            `"${sale.date}","${sale.method}","${item.name}",${item.qty},${item.price * item.qty}\n`;
 
-            productStats[item.name] = (productStats[item.name] || 0) + item.qty;
+            if(!productStats[item.name]){
+
+                productStats[item.name] = 0;
+            }
+
+            productStats[item.name] += item.qty;
         });
     });
 
-    csv += "\n===== สรุปยอดขาย =====\n";
+    csv += "\n";
+    csv += "===== สรุปยอดขาย =====\n";
     csv += `เงินสด,${cashTotal}\n`;
     csv += `เงินโอน,${transferTotal}\n`;
-    csv += `รวมทั้งหมด,${cashTotal + transferTotal}\n`;
+    csv += `ยอดรวม,${cashTotal + transferTotal}\n`;
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    csv += "\n";
+    csv += "===== สินค้าขายดี =====\n";
+    csv += "สินค้า,จำนวนที่ขาย\n";
 
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `sales-${new Date().toISOString().slice(0,10)}.csv`;
+    Object.entries(productStats)
+    .sort((a,b)=>b[1]-a[1])
+    .forEach(([name,qty])=>{
+
+        csv += `"${name}",${qty}\n`;
+    });
+
+    const blob =
+    new Blob(
+        [csv],
+        {
+            type:
+            "text/csv;charset=utf-8;"
+        }
+    );
+
+    const a =
+    document.createElement("a");
+
+    a.href =
+    URL.createObjectURL(blob);
+
+    const today =
+    new Date()
+    .toISOString()
+    .slice(0,10);
+
+    a.download =
+    `sales-report-${today}.csv`;
+
     a.click();
 }
+
 function clearDailySales() {
 
     if (!confirm("ล้างยอดขายวันนี้?")) return;
