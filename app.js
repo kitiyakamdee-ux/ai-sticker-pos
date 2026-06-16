@@ -863,5 +863,5 @@ function deleteSale(id){
 
     alert("ลบบิลสำเร็จ");
 }
-
+});
 
