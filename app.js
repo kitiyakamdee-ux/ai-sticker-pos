@@ -1,3 +1,12 @@
+let model = null;
+
+async function loadAI(){
+    model = await mobilenet.load();
+    console.log("✅ AI READY");
+}
+
+loadAI();
+
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let cameraStream = null;
 
@@ -270,9 +279,15 @@ async function startCamera(){
 // CAPTURE
 // ======================
 
-function captureBasket(){
+async function captureBasket(){
+
+    if(!model){
+        alert("AI ยังโหลดไม่เสร็จ กรุณารอ 3–5 วินาที");
+        return;
+    }
 
     const video = document.getElementById("camera");
+
     if(!video || !video.srcObject){
         alert("เปิดกล้องก่อน");
         return;
@@ -285,9 +300,15 @@ function captureBasket(){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    const imageData = canvas.toDataURL("image/jpeg", 0.8);
+    const img = tf.browser.fromPixels(canvas);
 
-    localStorage.setItem("lastBasketPhoto", imageData);
+    const prediction = await model.classify(img);
 
-    alert("ถ่ายภาพสำเร็จ");
+    console.log(prediction);
+
+    if(prediction.length > 0){
+        alert("AI พบ: " + prediction[0].className);
+    }else{
+        alert("ไม่พบสินค้า");
+    }
 }
