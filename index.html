@@ -7,8 +7,8 @@
 <title>AI Sticker POS</title>
 
 <link rel="stylesheet" href="style.css">
-</head>
 
+</head>
 <body>
 
 <header class="header">
@@ -37,22 +37,23 @@
 <section class="actions">
 
     <button id="resetBtn">
-    🗑️ Reset
+        🗑️ Reset
     </button>
 
     <button id="backupBtn">
-    💾 Backup
+        💾 Backup
     </button>
 
     <button id="restoreBtn">
-    📂 Load Backup
+        📂 Load Backup
     </button>
 
     <input
-    type="file"
-    id="restoreFile"
-    accept=".json"
-    style="display:none">
+        type="file"
+        id="restoreFile"
+        accept=".json"
+        style="display:none"
+    >
 
     <button id="addProductBtn">
         ➕ เพิ่มสินค้า
@@ -60,10 +61,6 @@
 
     <button id="checkoutBtn">
         🛒 Checkout
-    </button>
-
-    <button id="reportBtn">
-        📊 Reports
     </button>
 
 </section>
@@ -82,69 +79,36 @@
 
     <h2>สินค้า</h2>
 
-    <div id="productGrid" class="product-grid">
-        <hr>
-
-        <h2>🛒 ตะกร้าสินค้า</h2>
-    
-        <div id="cartList"></div>
-
-        <h3>
-        ยอดรวม:
-        <span id="cartTotal">0</span>
-        บาท
-        </h3>
-
-        <button id="checkoutBtn">
-        ชำระเงิน
-        </button>
+    <div
+        id="productGrid"
+        class="product-grid">
     </div>
 
 </section>
 
-    <input
+<input
     type="file"
     id="imagePicker"
     accept="image/*"
     style="display:none"
 >
-    <hr>
 
-<h2>📷 AI Checkout</h2>
+<hr>
 
-<button id="cameraBtn">
-เปิดกล้อง
-</button>
+<section class="cart-section">
 
-<button id="captureBtn">
-ถ่ายภาพ
-</button>
+    <h2>🛒 ตะกร้าสินค้า</h2>
 
-<video
-id="camera"
-autoplay
-playsinline
-style="
-width:100%;
-max-width:500px;
-display:none;
-border-radius:12px;
-">
-</video>
+    <div id="cartList"></div>
 
-<img
-id="capturedImage"
-style="
-width:100%;
-max-width:500px;
-display:none;
-border-radius:12px;
-margin-top:10px;
-">
-    
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-<script src="app.js" defer></script>
-    
+    <h3>
+        รวม:
+        ฿<span id="cartTotal">0</span>
+    </h3>
+
+</section>
+
+<script src="app.js"></script>
+
 </body>
 </html>
