@@ -170,13 +170,22 @@ function addToCart(id) {
 function calculateDiscountTotal(cart) {
 
     let totalQty = 0;
+    let totalPrice = 0;
 
-    cart.forEach(i => totalQty += i.qty);
+    cart.forEach(item => {
+        totalQty += item.qty;
+        totalPrice += item.qty * item.price;
+    });
 
     let sets = Math.floor(totalQty / 5);
     let remain = totalQty % 5;
 
-    return (sets * 100) + (remain * 20);
+    let promoTotal = (sets * 100) + (remain * 20);
+
+    return {
+        normal: totalPrice,
+        discounted: promoTotal
+    };
 }
 
 function renderCart() {
@@ -189,16 +198,15 @@ function renderCart() {
     list.innerHTML = "";
 
     cart.forEach(item => {
-
         list.innerHTML += `
         <div>
             ${item.name} x ${item.qty} = ${item.qty * item.price}
         </div>`;
     });
 
-    const total = calculateDiscountTotal(cart);
+    const calc = calculateDiscountTotal(cart);
 
-    totalEl.textContent = total;
+    totalEl.textContent = calc.discounted;
 }
 
 // ======================
@@ -212,7 +220,8 @@ function checkout(method) {
         return;
     }
 
-    const total = calculateDiscountTotal(cart);
+    const calc = calculateDiscountTotal(cart);
+    const total = calc.discounted;
 
     if (!confirm(`ยืนยันจ่าย ${total} บาท (${method})`)) return;
 
