@@ -343,6 +343,17 @@ function checkout(method){
         return;
     }
 
+    const ok = confirm(
+        "ยืนยันการชำระเงิน\n\n" +
+        "ช่องทาง: " + method +
+        "\nยอดรวม: ฿" +
+        document.getElementById("cartTotal").textContent
+    );
+
+    if(!ok){
+        return;
+    }
+
     let total = 0;
 
     cart.forEach(item => {
